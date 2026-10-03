@@ -125,14 +125,28 @@ def cavity_figures():
     if len(rows) < 2:
         cavity_gif(load(min(runs, key=lambda p: abs(np.log(float(os.path.basename(p)[9:-4]))))))
         return rows
-    fig, a = plt.subplots(figsize=(5.2, 3.6))
+    fig, (a, b) = plt.subplots(1, 2, figsize=(11, 3.9), layout="constrained")
     kns = [r["kn"] for r in rows]
-    a.semilogx(kns, [100 * r["frac"] for r in rows], "-o", color="#7b3294")
+    ma = U_LID / np.sqrt(5.0 / 3.0)
+    a.semilogx(kns, [100 * r["frac"] for r in rows], "-o", color="#7b3294", lw=2)
     a.set_xlabel("Kn")
     a.set_ylabel("% of cavity with heat flowing\nfrom cold to hot")
     a.set_ylim(0, 100)
     a.grid(alpha=0.3)
-    fig.tight_layout()
+    b.semilogx(kns, [r["fourier_cos"] for r in rows], "-s", color="#c0392b", lw=2,
+               label=r"Fourier, $-\kappa\nabla T$")
+    b.semilogx(kns, [r["grad13_cos"] for r in rows], "-o", color="#1f6fb4", lw=2,
+               label=r"Grad-13, $-\kappa\nabla T + \frac{3}{2}\frac{\mu}{\rho}\nabla p$")
+    b.axhline(0, color="k", lw=0.6)
+    b.set_ylim(-1, 1)
+    b.set_xlabel("Kn")
+    b.set_ylabel("mean cos(q, model)")
+    b.legend(fontsize=9, loc="center right")
+    b.grid(alpha=0.3)
+    for ax_ in (a, b):
+        ax_.axvline(ma, color="0.5", ls="--")
+        ax_.text(ma * 1.08, 0.05, "Kn = Ma", color="0.4", transform=ax_.get_xaxis_transform())
+        ax_.set_xlim(0.05, 20)
     fig.savefig(os.path.join(DOCS, "cavity_fraction.png"))
     plt.close(fig)
 
