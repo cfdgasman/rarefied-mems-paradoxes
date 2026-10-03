@@ -200,6 +200,31 @@ At **Kn = 1** the steady state is reached after about 4 time units H/√(kT<sub>
 
 This reproduces the DSMC finding of John, Gu & Emerson (2010) with a deterministic kinetic solver. Their DSMC also put the hot spot at the downstream corner, the cold spot at the upstream corner, and the heat flowing from cold to hot.
 
+**Across rarefaction** (`data/cavity_summary.csv`):
+
+| Kn | δ | (T<sub>max</sub> − T<sub>0</sub>)/(mU²/k) | (T<sub>min</sub> − T<sub>0</sub>)/(mU²/k) | heat flows cold → hot on | mean cos(**q**, −∇T) |
+|---|---|---|---|---|---|
+| 0.1 | 9.0 | +0.26 | −0.12 | **78%** of the cavity | −0.43 |
+| 1 | 0.90 | +0.29 | −0.18 | **94%** | −0.72 |
+| 10 | 0.090 | +0.32 | −0.21 | **99%** | −0.77 |
+
+<p align="center"><img src="docs/cavity_fraction.png" width="85%" alt="Share of the cavity with cold-to-hot heat flux, and alignment of q with Fourier and Grad-13, against Kn"></p>
+
+* At **Kn = 0.1** the gas is closer to continuum. Fourier's law still holds in a layer under the lid and in the two bottom corners (purple), where the temperature gradient is strong. Across the vortex core, heat already runs from cold to hot.
+* At **Kn = 1 and 10** almost the whole cavity is counter-gradient, and the temperature extremes grow as fewer collisions spread the compression heating.
+* The thin diagonal stripe at Kn = 10, and faintly at Kn = 1, is the **ray effect** of the discrete-velocity method. With few collisions the cavity corners emit beams along the discrete velocity directions. It covers a few cells and does not change the direction of the heat flux elsewhere.
+
+**Grid and velocity-grid refinement** at Kn = 1, steady state at t = 12 (`data/cavity_refinement_kn1.csv`):
+
+| cells per side | velocities per axis | (T<sub>max</sub> − T<sub>0</sub>)/(mU²/k) | (T<sub>min</sub> − T<sub>0</sub>)/(mU²/k) | cold → hot share | \|**u**\|/U at the centre |
+|---|---|---|---|---|---|
+| 32 | 28 | 0.271 | −0.166 | 95.1% | 0.0742 |
+| 48 | 28 | 0.288 | −0.181 | 94.4% | 0.0772 |
+| 64 | 28 | 0.296 | −0.195 | 92.5% | 0.0784 |
+| 48 | 40 | 0.288 | −0.185 | 94.2% | 0.0759 |
+
+The temperature extremes sit in the top corners, where the wall velocity jumps from U to 0. There they converge at about first order, and the peak values are uncertain by a few percent. The velocity grid changes every quantity by less than 2%. The main result is grid independent: heat runs from cold to hot over more than 90% of the cavity on every grid.
+
 ### Why: the heat flux is also driven by the stress
 
 Grad's 13-moment equations, the next step beyond Navier–Stokes, contain a balance law for **q** itself. For steady slow flow it reads (Pr = 2/3):
@@ -212,13 +237,15 @@ $$ \frac{(\mu/\rho)\,|\nabla p|}{\kappa\,|\nabla T|} \sim \frac{(\mu/\rho)\,\mu 
 
 so it wins once Kn exceeds the Mach number, which is already near Kn ≈ 0.1 for a 50 m/s lid. No second law is broken: the entropy production of the whole gas stays positive, and only the local link between q and ∇T is lost.
 
-**Test against the kinetic solution.** q<sub>G</sub> was computed from the kinetic T, p and μ fields at Kn = 1 and compared with the kinetic **q** away from the walls:
+**Test against the kinetic solution.** q<sub>G</sub> was computed from the kinetic T, p and μ fields and compared with the kinetic **q** away from the walls:
 
 | | mean cos(**q**, −κ∇T) | mean cos(**q**, **q**<sub>G</sub>) |
 |---|---|---|
+| Kn = 0.1 | −0.43 | **+0.97** |
 | Kn = 1 | **−0.72** (Fourier points the wrong way) | **+0.89** (Grad-13 points the right way) |
+| Kn = 10 | −0.77 | +0.92 |
 
-Adding a single non-Fourier term turns the prediction from wrong to right. This term is driven by the viscous stress, not by temperature differences.
+Adding a single non-Fourier term turns the prediction from wrong to right. This term is driven by the viscous stress, not by temperature differences. Grad-13 is best at Kn = 0.1, where a moment expansion is expected to work. Even far outside its range of validity, at Kn = 10, it still gives the right direction. The dashed line Kn = Ma in the plot above is the crossover predicted by the scaling argument: beyond it the non-Fourier term dominates.
 
 ---
 
@@ -385,8 +412,9 @@ $$ u_x(y) = \sqrt{2T}\,\bigl[X_P\,u_P(y) + X_T\,u_T(y)\bigr],\qquad X_P = H\frac
 | 2D pump local exponent γ | 0.208 | 0.214 |
 | 2D gas at rest stays at rest | exact | 10⁻⁷ (velocity-grid truncation) |
 | mass conservation, 2D | exact | drift ≤ 6 × 10⁻⁹ per run |
-| cold-to-hot heat flux in the cavity | John et al. (2010), DSMC | same hot and cold corners, q against −∇T on 94% of the cavity at Kn = 1 |
-| heat-flux direction | Grad-13 | mean cos(**q**, **q**<sub>G</sub>) = 0.89 |
+| cavity grid refinement 32² → 64², 28 → 40 velocities | grid independence | cold → hot share 95%, 94%, 92.5%; velocity grid < 2% |
+| cold-to-hot heat flux in the cavity | John et al. (2010), DSMC | same hot and cold corners; q against −∇T on 78%, 94%, 99% of the cavity at Kn = 0.1, 1, 10 |
+| heat-flux direction | Grad-13 | mean cos(**q**, **q**<sub>G</sub>) = 0.97, 0.89, 0.92 at Kn = 0.1, 1, 10 |
 
 ## Usage
 
