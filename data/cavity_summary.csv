@@ -1,0 +1,2 @@
+Kn,t_end,T_min,T_max,hot_spot,cold_spot,frac_cold_to_hot,"mean cos(q, Fourier)","mean cos(q, Grad13)",mass_drift
+1.0,12.0,0.99274,1.01151,"(0.99,0.95)","(0.01,0.93)",0.944,-0.721,0.890,5.4e-11

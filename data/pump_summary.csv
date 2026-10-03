@@ -1,0 +1,2 @@
+Kn,delta_mid,gamma_1D,gamma_2D,p_hot/p_cold 2D,p_hot/p_cold 1D theory,max profile difference / max|u|,net mid-section flux / total,mass_drift
+0.5,1.355,0.2080,0.2143,1.08645,1.08629,0.168,-0.0022,5.5e-09
